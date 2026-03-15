@@ -14,20 +14,21 @@ LIMIT 1;
 -- Write SQL query here
 
 SELECT language
-FROM country_languages
-WHERE country_code = 'VAT'
-AND is_official = 'T';
+FROM countrylanguages
+WHERE countrycode = 'VAT'
+AND isofficial = true;
 
 -- Clue #3: We have new news on the classes Carmen attended – our gumshoes tell us she's moved on to a different country, a country where people speak only the language she was learning. Find out which nearby country speaks nothing but that language.
 
 -- Write SQL query here
 
-SELECT countries.name
-FROM countries
-JOIN country_languages
-ON countries.code = country_languages.country_code
-WHERE country_languages.language = 'Italian'
-AND countries.code != 'VAT';
+SELECT c.name
+FROM countries c
+JOIN countrylanguages l
+ON c.code = l.countrycode
+WHERE l.language = 'Italian'
+GROUP BY c.name
+HAVING COUNT(*) = 1;
 
 -- Clue #4: We're booking the first flight out – maybe we've actually got a chance to catch her this time. There are only two cities she could be flying to in the country. One is named the same as the country – that would be too obvious. We're following our gut on this one; find out what other city in that country she might be flying to.
 
@@ -35,32 +36,34 @@ AND countries.code != 'VAT';
 
 SELECT name
 FROM cities
-WHERE country_code = 'ITA'
-AND name != 'Italy';
+WHERE countrycode = 'SMR'
+AND name <> 'San Marino';
 
 -- Clue #5: Oh no, she pulled a switch – there are two cities with very similar names, but in totally different parts of the globe! She's headed to South America as we speak; go find a city whose name is like the one we were headed to, but doesn't end the same. Find out the city, and do another search for what country it's in. Hurry!
 
 -- Write SQL query here
 
-SELECT name, country_code
+SELECT name, countrycode
 FROM cities
-WHERE name LIKE 'Nap%'
-AND country_code IN (
+WHERE countrycode IN (
     SELECT code
     FROM countries
     WHERE continent = 'South America'
-);
+)
+AND name LIKE 'San M%'
+AND name <> 'San Marino';
+
 -- Clue #6: We're close! Our South American agent says she just got a taxi at the airport, and is headed towards
 -- the capital! Look up the country's capital, and get there pronto! Send us the name of where you're headed and we'll
 -- follow right behind you!
 
 -- Write SQL query here
 
-SELECT cities.name
-FROM cities
-JOIN countries
-ON cities.id = countries.capital
-WHERE countries.name = 'Colombia';
+SELECT ci.name
+FROM cities ci
+JOIN countries co
+  ON ci.id = co.capital
+WHERE co.code = 'ARG';
 
 -- Clue #7: She knows we're on to her – her taxi dropped her off at the international airport, and she beat us to the boarding gates. We have one chance to catch her, we just have to know where she's heading and beat her to the landing dock. Lucky for us, she's getting cocky. She left us a note (below), and I'm sure she thinks she's very clever, but if we can crack it, we can finally put her where she belongs – behind bars.
 
@@ -72,8 +75,9 @@ WHERE countries.name = 'Colombia';
 --               So I'm off to add one to the population I find
 --               In a city of ninety-one thousand and now, eighty five.
 
-SELECT name, country_code
+SELECT name, population, countrycode
 FROM cities
-WHERE population = 9185;
+WHERE population = 91084
+ORDER BY population;
 
 -- We're counting on you, gumshoe. Find out where she's headed, send us the info, and we'll be sure to meet her at the gates with bells on.
